@@ -39,7 +39,8 @@ parser.add_argument(
     default=100,
     help="num of smplify iters"  # 100
 )
-parser.add_argument("--cuda", type=bool, default=True, help="enables cuda")
+parser.add_argument("--cuda", action='store_true', help="enable CUDA (optional)")
+# parser.add_argument("--cuda", type=bool, default=True, help="enables cuda")
 parser.add_argument("--gpu_ids", type=int, default=0, help="choose gpu ids")
 parser.add_argument("--num_joints", type=int, default=22, help="joint number")
 parser.add_argument("--joint_category",
@@ -72,11 +73,15 @@ opt = parser.parse_args()
 print(opt)
 
 # ---load predefined something
-device = torch.device("cuda:" + str(opt.gpu_ids) if opt.cuda else "cpu")
+device = torch.device("cuda" if opt.cuda and torch.cuda.is_available() else "cpu")
+# device = torch.device("cuda:" + str(opt.gpu_ids) if opt.cuda else "cpu")
 print(config.SMPL_MODEL_DIR)
 # smplmodel = smplx.create(config.SMPL_MODEL_DIR,
 #                          model_type="smplh", gender="neutral", ext="npz",
 #                          batch_size=opt.batchSize).to(device)
+
+print("Model type:", "smpl")
+print("Model path:", config.SMPL_MODEL_DIR)
 smplmodel = smplx.create(
     config.SMPL_MODEL_DIR,
     model_type="smpl",
