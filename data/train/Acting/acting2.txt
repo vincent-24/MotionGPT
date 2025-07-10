@@ -1,10 +1,50 @@
-a person waves to a friend across the street
-a person ties their shoelaces while standing
-a person opens an umbrella in the rain
-a person picks up a dropped wallet and returns it
-a person stretches arms after waking up
-a person sneezes and wipes their nose
-a person looks at a watch and hurries
-a person sits down and crosses their legs
-a person yawns and covers their mouth
-a person knocks on a door and waits
+a person puts on a jacket and zips it up
+a person buttons a shirt
+a person ties a necktie in front of a mirror
+a person puts on socks and shoes
+a person adjusts a scarf around the neck
+a person removes a coat and hangs it
+a person rolls up sleeves before working
+a person fastens a belt around the waist
+a person puts on gloves before going outside
+a person takes off a hat and shakes it
+a person brushes teeth in front of a mirror
+a person washes face with water
+a person combs hair with a brush
+a person applies lotion to hands
+a person trims fingernails with clippers
+a person dries hands with a towel
+a person puts on deodorant
+a person checks appearance in the mirror
+a person flosses teeth carefully
+a person rinses mouth with water
+a person unlocks a door with a key
+a person turns a doorknob and enters a room
+a person opens a window to let in air
+a person closes curtains at night
+a person switches on a lamp
+a person sits on a couch and relaxes
+a person arranges pillows on a sofa
+a person sweeps the floor with a broom
+a person dusts a shelf with a cloth
+a person waters a plant in a pot
+a person jogs in place to warm up
+a person stretches arms overhead
+a person does jumping jacks
+a person touches toes while standing
+a person does a push-up on the floor
+a person balances on one leg
+a person does a squat and stands up
+a person lunges forward with one leg
+a person rotates shoulders in circles
+a person cools down by walking slowly
+a person pets a dog on the head
+a person throws a ball for a dog to fetch
+a person fills a bowl with pet food
+a person brushes a cat's fur gently
+a person puts a collar on a pet
+a person plays tug-of-war with a dog
+a person gives a treat to a pet
+a person cleans a pet's water bowl
+a person picks up a cat and cuddles it
+a person waves a toy for a cat to chase

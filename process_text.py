@@ -11,6 +11,7 @@ from mGPT.utils.load_model import load_model
 import mGPT.render.matplot.plot_3d_global as plot_3d
 import moviepy.editor as mp
 from convert_to_imuposer import convert_to_imuposer_format
+from convert_motiongpt_to_dipimu import save_motion_as_dipimu_pkl
 from argparse import ArgumentParser
 from omegaconf import OmegaConf
 
@@ -222,7 +223,7 @@ def process_long_sequence_with_overlap(motion_data, max_window_size=196, overlap
 
 default_dir = "/media/riku-hdd/vincent/MotionGPT/cache"
 
-def render_motion(data, feats, output_dir, text, output_types=["npz", "mp4", "npy"], save_imuposer=False):
+def render_motion(data, feats, output_dir, text, output_types=["npz", "mp4", "npy"], save_imuposer=False, test_mode=False):
     """Render motion to video and save motion data
     
     Args:
@@ -232,6 +233,7 @@ def render_motion(data, feats, output_dir, text, output_types=["npz", "mp4", "np
         text: Text description of motion
         output_types: List of output types to generate. Can include "npz", "mp4", "npy"
         save_imuposer: Whether to also save in IMUPoser-compatible format
+        test_mode: If True, save as DIP-IMU .pkl format instead of .npz
 
     Returns:
         dict: Dictionary containing paths to generated files
@@ -254,7 +256,18 @@ def render_motion(data, feats, output_dir, text, output_types=["npz", "mp4", "np
         np.save(output_npy_path, feats)
         outputs["npy"] = output_npy_path
 
-    if "npz" in output_types:
+    # Handle test mode - save as DIP-IMU .pkl instead of .npz
+    if test_mode:
+        pkl_fname = fname + '.pkl'
+        output_pkl_path = os.path.join(output_dir, pkl_fname)
+        
+        # Save motion data in DIP-IMU format
+        subject_id = f"motiongpt_{fname}"
+        save_motion_as_dipimu_pkl(data_60fps, output_pkl_path, subject_id)
+        outputs["pkl"] = output_pkl_path
+        print(f"✓ Successfully saved DIP-IMU format data to {output_pkl_path}")
+        
+    elif "npz" in output_types:
         npz_fname = fname + '.npz'
         output_npz_path = os.path.join(output_dir, npz_fname)
         
@@ -317,7 +330,7 @@ def render_motion(data, feats, output_dir, text, output_types=["npz", "mp4", "np
     
     return outputs
 
-def process_text(text, output_dir=default_dir, output_types=["npz", "mp4", "npy"], save_imuposer=False, motion_length=None, blend_frames=15):
+def process_text(text, output_dir=default_dir, output_types=["npz", "mp4", "npy"], save_imuposer=False, motion_length=None, blend_frames=15, test_mode=False):
     """Process a text description to generate motion
     
     Args:
@@ -327,6 +340,7 @@ def process_text(text, output_dir=default_dir, output_types=["npz", "mp4", "npy"
         save_imuposer: Whether to also save in IMUPoser-compatible format
         motion_length: Target motion length in frames (None = use MotionGPT's natural length)
         blend_frames: Number of frames to blend between repetitions
+        test_mode: If True, save as DIP-IMU .pkl format instead of .npz
         
     Returns:
         dict: Dictionary containing paths to generated files
@@ -389,7 +403,8 @@ def process_text(text, output_dir=default_dir, output_types=["npz", "mp4", "npy"
         output_dir,
         text,
         output_types,
-        save_imuposer
+        save_imuposer,
+        test_mode
     )
 
 if __name__ == "__main__":
@@ -423,8 +438,8 @@ if __name__ == "__main__":
     custom_group.add_argument("--save-imuposer", action="store_true", help="Also save in IMUPoser format")
     custom_group.add_argument("--motion-length", type=int, default=None, help="Target motion length in frames (default: use MotionGPT's natural length)")
     custom_group.add_argument("--blend-frames", type=int, default=15, help="Number of frames to blend between repetitions")
-    custom_group.add_argument("--output-types", nargs="+", default=["npz"], 
-                          choices=["npz", "mp4", "npy"], help="Output types to generate")
+    custom_group.add_argument("--output-types", nargs="+", default=["npz"], choices=["npz", "mp4", "npy"], help="Output types to generate")
+    custom_group.add_argument("--test", action="store_true", help="Test mode: Save as DIP-IMU .pkl format instead of .npz for fine-tuning compatibility")
     
     args = base_parser.parse_args()
     
@@ -472,9 +487,12 @@ if __name__ == "__main__":
                     text = line.strip()
                     if text:  # Skip empty lines
                         try:
-                            output_files = process_text(text, full_output_dir, args.output_types, args.save_imuposer, args.motion_length, args.blend_frames)
+                            output_files = process_text(text, full_output_dir, args.output_types, args.save_imuposer, args.motion_length, args.blend_frames, args.test)
                             print(f"  [{line_num}] Processed: {text}")
-                            print(f"       Generated: {list(output_files.keys())}")
+                            if args.test:
+                                print(f"       Generated DIP-IMU .pkl files: {list(output_files.keys())}")
+                            else:
+                                print(f"       Generated: {list(output_files.keys())}")
                         except Exception as e:
                             print(f"  [{line_num}] Error processing '{text}': {e}")
         
@@ -485,14 +503,20 @@ if __name__ == "__main__":
         with open(args.input, "r") as f:
             for line in f:
                 text = line.strip()
-                output_files = process_text(text, args.output_dir, args.output_types, args.save_imuposer, args.motion_length, args.blend_frames)
+                output_files = process_text(text, args.output_dir, args.output_types, args.save_imuposer, args.motion_length, args.blend_frames, args.test)
                 print(f"Processed: {text}")
-                print(f"Generated files: {output_files}")
+                if args.test:
+                    print(f"Generated DIP-IMU .pkl files: {output_files}")
+                else:
+                    print(f"Generated files: {output_files}")
     elif args.text:
         # Single text processing mode
-        output_files = process_text(args.text, args.output_dir, args.output_types, args.save_imuposer, args.motion_length, args.blend_frames)
+        output_files = process_text(args.text, args.output_dir, args.output_types, args.save_imuposer, args.motion_length, args.blend_frames, args.test)
         print(f"Processed: {args.text}")
-        print(f"Generated files: {output_files}")
+        if args.test:
+            print(f"Generated DIP-IMU .pkl files: {output_files}")
+        else:
+            print(f"Generated files: {output_files}")
     else:
         print("Please provide one of the following:")
         print("  --input with a file for single file processing")
