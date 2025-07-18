@@ -18,10 +18,12 @@ from mGPT.render.pyrender.hybrik_loc2rot import HybrIKJointsToRotmat
 from mGPT.render.pyrender.smpl_render import SMPLRender
 from transformers import WhisperProcessor, WhisperForConditionalGeneration
 import librosa
+from mGPT.utils.load_model import load_model
 
 os.environ['DISPLAY'] = ':0.0'
 os.environ['PYOPENGL_PLATFORM'] = 'egl'
 
+'''
 # Load model
 cfg = parse_args(phase="webui")  # parse config file
 cfg.FOLDER = 'cache'
@@ -37,6 +39,9 @@ model = build_model(cfg, datamodule)
 state_dict = torch.load(cfg.TEST.CHECKPOINTS, map_location="cpu")["state_dict"]
 model.load_state_dict(state_dict)
 model.to(device)
+'''
+
+cfg, model, device = load_model(parse_args(phase="webui"))
 
 audio_processor = WhisperProcessor.from_pretrained(cfg.model.whisper_path)
 audio_model = WhisperForConditionalGeneration.from_pretrained(cfg.model.whisper_path).to(device)
@@ -93,9 +98,14 @@ def render_motion(data, feats, method='fast'):
         time.time())) + str(np.random.randint(10000, 99999))
     video_fname = fname + '.mp4'
     feats_fname = fname + '.npy'
-    output_npy_path = os.path.join(output_dir, feats_fname)
+    npz_fname = fname + '.npz'
+
     output_mp4_path = os.path.join(output_dir, video_fname)
+    output_npy_path = os.path.join(output_dir, feats_fname)
+    output_npz_path = os.path.join(output_dir, npz_fname)
+
     np.save(output_npy_path, feats)
+    np.savez(output_npz_path, feats=feats, data=data)
 
     if method == 'slow':
         if len(data.shape) == 4:
