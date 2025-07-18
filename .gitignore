@@ -1,4 +1,5 @@
 data/LLM/*
+!data/LLM/.gitkeep
 cache/*
 
 **/__pycache__/
